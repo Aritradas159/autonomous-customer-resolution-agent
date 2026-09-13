@@ -7,6 +7,29 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { runGroqAgent } from '@/lib/groqAgent';
 
+function formatReadableError(errorMessage: string): string {
+  // Ensure the raw API key is never exposed even if an SDK error includes it
+  const sanitized = errorMessage.replace(/gsk_[a-zA-Z0-9_-]+/g, '[REDACTED_API_KEY]');
+
+  // Check for rate limit error
+  if (sanitized.includes('429') || sanitized.toLowerCase().includes('rate limit')) {
+    return 'The Groq AI API rate limit was exceeded. Please wait a moment and try again, or switch to Mock Mode.';
+  }
+
+  // Check for authentication error
+  if (sanitized.includes('401') || sanitized.toLowerCase().includes('invalid api key')) {
+    return 'Invalid GROQ_API_KEY. Please check your API key in .env.local, or switch to Mock Mode.';
+  }
+
+  // Extract human-readable message if the error contains a JSON payload
+  const jsonMatch = sanitized.match(/\{[\s\S]*"message"\s*:\s*"([^"]+)"[\s\S]*\}/);
+  if (jsonMatch && jsonMatch[1]) {
+    return jsonMatch[1];
+  }
+
+  return sanitized;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -59,15 +82,14 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown Groq agent failure';
-    // Ensure the raw API key is never exposed even if an SDK error includes it
-    const sanitizedError = errorMessage.replace(/gsk_[a-zA-Z0-9_-]+/g, '[REDACTED_API_KEY]');
+    const rawErrorMessage = err instanceof Error ? err.message : 'Unknown Groq agent failure';
+    const friendlyError = formatReadableError(rawErrorMessage);
 
     return NextResponse.json(
       {
         success: false,
         source: 'groq',
-        error: `Groq Agent Execution Error: ${sanitizedError}`,
+        error: `Groq Agent Error: ${friendlyError}`,
         can_fallback: true,
         timestamp: new Date().toISOString(),
       },
