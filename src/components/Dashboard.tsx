@@ -249,48 +249,93 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-[var(--background)]">
-      {/* Top Demo Environment & Mode Notice Banner */}
-      <div
-        className={`px-4 py-1.5 flex items-center justify-between text-[11px] z-50 border-b ${
-          agentMode === 'groq'
-            ? 'bg-emerald-950/40 border-emerald-500/30 text-emerald-200'
-            : 'bg-amber-950/40 border-amber-500/30 text-amber-200'
-        }`}
-      >
-        <div className="flex items-center gap-2 truncate">
-          <span
-            className={`font-bold uppercase tracking-wider ${
-              agentMode === 'groq' ? 'text-emerald-400' : 'text-amber-400'
+      {/* Polished Top Navigation Bar */}
+      <header className="h-12 px-4 flex items-center justify-between border-b border-[var(--border)] bg-[var(--card)]/90 backdrop-blur-md z-30 shrink-0">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-1.5 rounded-md hover:bg-[var(--card-hover)] text-[var(--muted)] hover:text-white transition-colors"
+            title="Toggle Sidebar"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-sm font-bold text-blue-400">
+              🤖
+            </div>
+            <span className="text-sm font-bold text-white tracking-tight hidden sm:inline">
+              Resolution Agent
+            </span>
+            <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-[var(--border)]/60 text-[var(--muted)] hidden md:inline">
+              Smart Automation • Track 3
+            </span>
+          </div>
+        </div>
+
+        {/* Center Mode & Scenario Indicator */}
+        <div className="flex items-center gap-2">
+          <div
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-semibold ${
+              agentMode === 'groq'
+                ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300 shadow-[0_0_12px_-2px_rgba(16,185,129,0.3)]'
+                : 'bg-amber-950/40 border-amber-500/40 text-amber-300 shadow-[0_0_12px_-2px_rgba(245,158,11,0.2)]'
             }`}
           >
-            {agentMode === 'groq' ? '⚡ Groq AI Active:' : '🧪 Mock Mode:'}
-          </span>
-          <span className="truncate">
-            {agentMode === 'groq'
-              ? 'Llama 3.3 model reasoning with native tool calling against real backend tools. Verified state updates.'
-              : 'Deterministic test stub running with in-memory state. No external API key required.'}
-          </span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                agentMode === 'groq' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+              }`}
+            />
+            <span className="text-[11px] uppercase tracking-wider font-bold">
+              {agentMode === 'groq' ? 'Groq AI Live' : 'Mock Mode'}
+            </span>
+          </div>
+
+          {selectedScenario && (
+            <span className="text-xs text-[var(--muted)] hidden lg:inline max-w-xs truncate font-medium">
+              <span className="text-white/40">•</span> {selectedScenario.name.replace(/^[^\s]+\s/, '')}
+            </span>
+          )}
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+
+        {/* Right Status & Tools */}
+        <div className="flex items-center gap-2">
           <span
-            className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${
+            className={`text-[10px] font-mono px-2 py-0.5 rounded-md border flex items-center gap-1.5 ${
               groqConfigured
                 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                 : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
             }`}
           >
-            {groqConfigured ? 'Groq Key: Detected' : 'Groq Key: Missing'}
+            <span className={`w-1.5 h-1.5 rounded-full ${groqConfigured ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            <span className="hidden sm:inline">{groqConfigured ? 'Groq Key: Detected' : 'Groq Key: Missing'}</span>
+            <span className="sm:hidden">{groqConfigured ? 'Key OK' : 'No Key'}</span>
           </span>
+
           <a
             href="/api/health"
             target="_blank"
             rel="noreferrer"
-            className="text-[10px] underline hover:opacity-80"
+            className="text-[10px] text-[var(--muted)] hover:text-white px-2 py-1 rounded hover:bg-[var(--card-hover)] transition-colors border border-transparent hover:border-[var(--border)] font-mono"
+            title="System Health Check API"
           >
-            Health Check
+            Health
           </a>
+
+          <button
+            onClick={resetState}
+            className="text-[10px] text-[var(--muted)] hover:text-red-300 px-2 py-1 rounded bg-[var(--card-hover)] hover:bg-red-950/30 border border-[var(--border)] hover:border-red-500/40 transition-colors flex items-center gap-1 font-semibold"
+            title="Reset Simulated World State"
+          >
+            <span>🔄</span>
+            <span className="hidden md:inline">Reset</span>
+          </button>
         </div>
-      </div>
+      </header>
 
       {/* Main Dashboard Layout */}
       <div className="flex-1 flex overflow-hidden">
@@ -310,7 +355,7 @@ export default function Dashboard() {
         {/* Content Area */}
         <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
           {/* Chat Panel */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 bg-[var(--background)]">
             <ChatPanel
               messages={messages}
               onSendMessage={handleSendMessage}
@@ -323,13 +368,13 @@ export default function Dashboard() {
           </div>
 
           {/* Right Inspection Panels */}
-          <div className="w-full lg:w-[540px] flex flex-col border-l border-[var(--border)] overflow-hidden">
+          <div className="w-full lg:w-[520px] xl:w-[560px] flex flex-col border-l border-[var(--border)] bg-[var(--card)]/40 overflow-hidden">
             {/* Top: Agent Execution Trace Panel */}
-            <div className="flex-1 overflow-hidden min-h-[300px]">
+            <div className="flex-1 overflow-hidden min-h-[280px]">
               <TracePanel events={traceEvents} mode={agentMode} />
             </div>
             {/* Bottom: Verified Case State Panel */}
-            <div className="flex-1 overflow-hidden border-t border-[var(--border)] min-h-[300px]">
+            <div className="flex-1 overflow-hidden border-t border-[var(--border)] min-h-[280px]">
               <StatePanel
                 customer={customer}
                 order={order}
