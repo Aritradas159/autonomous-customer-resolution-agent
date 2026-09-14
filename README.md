@@ -5,6 +5,9 @@ Frontend Dashboard, Backend Enterprise Tools & Integration API for an Autonomous
 
 An AI agent that resolves customer support cases (refunds, replacements, cancellations) by calling real backend tools — checking policy, checking inventory, and honestly reporting failures instead of hallucinating success — then replanning when its first approach doesn't work.
 
+## Youtube Video :https://youtu.be/KwfN0hc6GEc
+## Vercel Live Deployment :https://autonomous-os.vercel.app/
+
 ---
 
 ## ⚠️ Deployment & Persistence Notice
